@@ -1,0 +1,102 @@
+<html lang="eng">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        Polygon filling
+    </title>
+</head>
+<body>
+<canvas width="1000" height="1000" id="polygon">
+</canvas>
+<script>
+    let canvas = document.getElementById("polygon");
+    let ctx = canvas.getContext("2d");
+    let x = [];
+    let y = [];
+    let flag = false;
+    let count = 0;
+
+    function Line(x0, y0, x1, y1) {
+        let dx = Math.abs(x1 - x0);
+        let dy = -1 * Math.abs(y1 - y0);
+        let x_step = (x0 < x1 ? 1 : -1);
+        let y_step = (y0 < y1 ? 1 : -1);
+        let error = dx + dy;
+        let end = false;
+        while (!end) {
+            ctx.fillRect(x0, y0, 2, 2);
+            if (2 * error >= dy) {
+                error += dy;
+                x0 += x_step;
+            }
+            if (2 * error <= dx) {
+                error += dx;
+                y0 += y_step;
+            }
+            if (Math.abs(x0 - x1) + Math.abs(y0 - y1) < 2) {
+                end = true;
+            }
+        }
+    }
+
+    function fill_field(x, y) {
+        let arr = [];
+        let point = [x, y];
+        arr.push(point);
+        while (arr.length !== 0) {
+            let new_x;
+            let new_y;
+            let new_point;
+            point = arr.pop();
+            if (ctx.getImageData(point[0], point[1], 1, 1).data[3] !== 255)
+                ctx.fillRect(point[0], point[1], 1, 1);
+            if (ctx.getImageData(point[0] + 1, point[1], 1, 1).data[3] !== 255) {
+                new_x = point[0] + 1;
+                new_y = point[1];
+                new_point = [new_x, new_y];
+                arr.push(new_point);
+            }
+            if (ctx.getImageData(point[0] - 1, point[1], 1, 1).data[3] !== 255) {
+                new_x = point[0] - 1;
+                new_y = point[1];
+                new_point = [new_x, new_y]
+                arr.push(new_point);
+            }
+            if (ctx.getImageData(point[0], point[1] + 1, 1, 1).data[3] !== 255) {
+                new_x = point[0];
+                new_y = point[1] + 1;
+                new_point = [new_x, new_y];
+                arr.push(new_point);
+            }
+            if (ctx.getImageData(point[0], point[1] - 1, 1, 1).data[3] !== 255) {
+                new_x = point[0];
+                new_y = point[1] - 1;
+                new_point = [new_x, new_y];
+                arr.push(new_point);
+            }
+
+        }
+    }
+
+    canvas.addEventListener("click", function (event) {
+        if (!flag) {
+            x.push(event.offsetX);
+            y.push(event.offsetY);
+            if (count >= 1)
+                Line(x[count - 1], y[count - 1], x[count], y[count]);
+            count++;
+        } else {
+            ctx.fillStyle = "#00ff00";
+            fill_field(event.offsetX, event.offsetY);
+            ctx.fillStyle = "#000000";
+        }
+    });
+    document.addEventListener("keypress", function (event) {
+        flag = true;
+        x.push(x[0]);
+        y.push(y[0]);
+        Line(x[count - 1], y[count - 1], x[0], y[0]);
+    });
+</script>
+</body>
+</html>
